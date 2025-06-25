@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const Enquiry = require("../models/enquiryModel");
 
-// Admin login with hardcoded credentials from .env
 exports.adminLogin = (req, res) => {
     const { email, password } = req.body;
 
@@ -23,7 +22,6 @@ exports.adminLogin = (req, res) => {
     return res.status(401).json({ message: "Invalid admin credentials" });
 };
 
-// Get all users
 exports.getUsers = async (req, res) => {
     try {
         const users = await User.find().sort({ createdAt: -1 });
@@ -33,7 +31,6 @@ exports.getUsers = async (req, res) => {
     }
 };
 
-// Toggle active/inactive user status
 exports.toggleUserStatus = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
@@ -48,15 +45,32 @@ exports.toggleUserStatus = async (req, res) => {
     }
 };
 
-// Get all enquiries
-exports.getEnquiries = async (req, res) => {
+exports.getAllEnquiries = async (req, res) => {
     try {
         const enquiries = await Enquiry.find()
-            .populate("userId", "fullName email")
+            .populate('userId', 'fullName email')
             .sort({ createdAt: -1 });
 
-        return res.status(200).json({ data: enquiries, message: "Get all Enquiries" });
-    } catch {
-        return res.status(500).json({ message: "Failed to fetch enquiries" });
+
+        const result = enquiries.map(enq => ({
+            _id: enq._id,
+            title: enq.title,
+            description: enq.description,
+            category: enq.category,
+            fileUrl: enq.fileUrl,
+            createdAt: enq.createdAt,
+            user: enq.userId
+                ? {
+                    _id: enq.userId._id,
+                    fullName: enq.userId.fullName,
+                    email: enq.userId.email,
+                }
+                : null,
+        }));
+
+        return res.status(200).json({ data: result, message: 'Get all Enquiries' });
+    } catch (error) {
+        console.error('Get enquiries error:', error);
+        return res.status(500).json({ message: 'Failed to fetch enquiries' });
     }
 };

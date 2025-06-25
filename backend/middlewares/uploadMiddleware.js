@@ -1,5 +1,3 @@
-// middleware/upload.js
-
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -22,13 +20,12 @@ const storage = multer.diskStorage({
     const timestamp = Date.now();
     const random = Math.round(Math.random() * 1e9);
     const uniqueName = `${timestamp}-${random}-${file.originalname}`;
-    
+
     console.log("Uploading file with name:", uniqueName);
     cb(null, uniqueName);
   },
 });
 
-// File filter for allowed types
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /pdf|docx|jpg|jpeg|png/;
   const extname = path.extname(file.originalname).toLowerCase();
@@ -40,12 +37,10 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Define limits (5MB max file size)
 const limits = {
   fileSize: 5 * 1024 * 1024, // 5MB
 };
 
-// Final multer config
 const upload = multer({
   storage,
   limits,
